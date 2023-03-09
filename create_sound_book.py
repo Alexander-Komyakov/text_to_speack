@@ -36,6 +36,9 @@ if os.path.isdir(text_file):
 elif os.path.isfile(text_file):
 	with open(text_file, "r") as f:
 		ssml_sample = f.read()
+else:
+	print("NOT FOUND ", text_file)
+	sys.exit()
 
 sample_rate = 48000
 speaker = 'random'
