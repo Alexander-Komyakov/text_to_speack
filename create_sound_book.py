@@ -41,7 +41,11 @@ else:
 	sys.exit()
 
 sample_rate = 48000
+standart_speaker = ["aidar", "baya", "xenia", "kseniya", "eugene"]
 speaker = 'random'
+if model_file in standart_speaker:
+	speaker = model_file
+
 audio_files_names = []
 len_text = 500
 device = torch.device('cpu')
