@@ -3,6 +3,7 @@ Text to speak
 ## Example:
 
 `./create_sound_book.py text.txtORdir generated.pt out.wav`
+`./create_sound_book.py ssml_text.txtORdir generated.pt out.wav --ssml`
 
 # Created by Alexander Komyakov
 For any kind of help, support, suggetion and request ask in me
