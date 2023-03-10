@@ -49,6 +49,10 @@ def split_audio(audio_array):
 text_file = sys.argv[1]
 model_file = sys.argv[2]
 voice_path = sys.argv[3]
+if len(sys.argv) > 4:
+	ssml_flag = sys.argv[4]
+else:
+	ssml_flag = 0
 
 if os.path.isdir(text_file):
 	ssml_sample = ""
@@ -86,7 +90,13 @@ for i in range(0, len(ssml_sample)-4):
 	text = ssml_sample[i]
 	print(str(i)+") generate")
 	print(text)
-	audio_model = model.apply_tts(ssml_text="<speak>"+text+"</speak>",
+	if ssml_flag == "--ssml":
+		audio_model = model.apply_tts(ssml_text="<speak>"+text+"</speak>",
+									 speaker=speaker,
+									 sample_rate=sample_rate,
+									 voice_path=model_file)
+	else:
+		audio_model = model.apply_tts(text=text,
 								 speaker=speaker,
 								 sample_rate=sample_rate,
 								 voice_path=model_file)
