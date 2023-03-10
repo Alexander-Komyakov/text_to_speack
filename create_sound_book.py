@@ -8,6 +8,28 @@ from pydub import AudioSegment
 from IPython.display import Audio
 
 
+def ssml_text_cut(text):
+	text_out = []
+	while text != "" or len(text) >= 2:
+		tmp_text = text[:800]
+		pos_begin = tmp_text.find("<p>")
+		pos_end = tmp_text.find("</p>")+4
+		if pos_end == -1+4:
+			pos_begin = 0
+			pos_end = tmp_text.rfind("\n")
+			if pos_end == -1:
+				pos_end = tmp_text.rfind(" ")
+				if pos_end == -1:
+					tmp_text += "</p>"
+					pos_end = len(tmp_text)
+		pos_end = tmp_text.find("</p>")+4
+		if pos_end == -1+4:
+			tmp_text += "</p>"
+			pos_end = len(tmp_text)
+		text_out.append(tmp_text[pos_begin:pos_end])
+		text = text[pos_end+1:]
+	return text_out
+
 def save_audio(name, audio, rate):
 	with open(name, 'wb+') as f:
 		f.write(Audio(audio, rate=rate).data)
@@ -59,10 +81,12 @@ if not os.path.isfile("model.pt"):
 model = torch.package.PackageImporter("model.pt").load_pickle("tts_models", "model")
 model.to(device)
 
-for i in range(0, int(len(ssml_sample)/len_text)):
+ssml_sample = ssml_text_cut(ssml_sample)
+for i in range(0, len(ssml_sample)-4):
+	text = ssml_sample[i]
 	print(str(i)+") generate")
-	text_to_torch = ssml_sample[i*len_text:i*len_text+len_text]
-	audio_model = model.apply_tts(text=text_to_torch,
+	print(text)
+	audio_model = model.apply_tts(ssml_text="<speak>"+text+"</speak>",
 								 speaker=speaker,
 								 sample_rate=sample_rate,
 								 voice_path=model_file)
