@@ -13,7 +13,7 @@ Text to speak
     default: ПУСТО
     -s --speaker   ИМЯ      имя спикера: aidar, baya,
                                          xenia, kseniya, eugene
-    default: aidar
+    default: eugene
                             если используем gen_model: random
     -o --out_sound ФАЙЛ     конечный файл в формате wav
     default: sound.wav
@@ -23,7 +23,7 @@ Text to speak
     default: ПУСТО
 Примеры:
     create_sound_book.py -t ssml_text.txt -o song.wav --ssml
-    create_sound_book.py -t ssml_text.txt -o song.wav --ssm
+    create_sound_book.py -t ssml_text.txt -o song.wav --ssml
 ```
 
 # Created by Alexander Komyakov
