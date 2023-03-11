@@ -46,7 +46,7 @@ def split_audio(audio_array):
 			out_sounds = out_sounds + AudioSegment.from_wav("sound/pause"+random.choice(["1_5s", "2s"])+".wav")
 			continue 
 		out_sounds = out_sounds + AudioSegment.from_wav(audio_array[i])
-		out_sounds = out_sounds + AudioSegment.from_wav("sound/pause"+random.choice(["1_5s", "2s", "3s"])+".wav")
+		out_sounds = out_sounds + AudioSegment.from_wav("sound/pause"+random.choice(["1_5s", "2s"])+".wav")
 	return out_sounds
 
 text_file = sys.argv[1]
