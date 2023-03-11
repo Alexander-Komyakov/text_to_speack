@@ -7,12 +7,13 @@ import sys
 import random
 from pydub import AudioSegment
 from IPython.display import Audio
+import argparse
 
 
-def ssml_text_cut(text):
+def ssml_text_cut(text, len_paragraph):
 	text_out = []
 	while text != "" or len(text) >= 2:
-		tmp_text = text[:990]
+		tmp_text = text[:len_paragraph]
 		pos_begin = tmp_text.find("<p>")
 		pos_end = tmp_text.find("</p>")+4
 		if pos_end == -1+4:
@@ -49,13 +50,34 @@ def split_audio(audio_array):
 		out_sounds = out_sounds + AudioSegment.from_wav("sound/pause"+random.choice(["1_5s", "2s"])+".wav")
 	return out_sounds
 
-text_file = sys.argv[1]
-model_file = sys.argv[2]
-voice_path = sys.argv[3]
-if len(sys.argv) > 4:
-	ssml_flag = sys.argv[4]
+
+parser = argparse.ArgumentParser(add_help=False)
+parser.add_argument("-h", "--help", action="help", default=argparse.SUPPRESS,
+					help=\
+"""
+Спикеры: aidar baya xenia kseniya eugene. С использованием GEN_MODEL только random. Некоторые спикеры работают с ошибками, например aidar""")
+parser.add_argument("-t", "--text", default="text.txt")
+parser.add_argument("-m", "--model", default="model.pt")
+parser.add_argument("-g", "--gen_model", default="")
+parser.add_argument("-s", "--speaker", default="eugene")
+parser.add_argument("-o", "--out_sound", default="sound.wav")
+parser.add_argument("-l", "--ssml", action=argparse.BooleanOptionalAction, default="0")
+all_args = parser.parse_args(sys.argv[1:])
+
+text_file = all_args.text
+model_file = all_args.model
+speaker = all_args.speaker
+gen_model = all_args.gen_model
+out_sound = all_args.out_sound
+ssml_flag = all_args.ssml
+
+len_paragraph = 990
+
+if gen_model == "":
+	gen_model = model_file
 else:
-	ssml_flag = 0
+	speaker = "random"
+	len_paragraph = 500
 
 if os.path.isdir(text_file):
 	ssml_sample = ""
@@ -71,40 +93,38 @@ else:
 
 sample_rate = 48000
 standart_speaker = ["aidar", "baya", "xenia", "kseniya", "eugene"]
-speaker = 'random'
-if model_file in standart_speaker:
-	speaker = model_file
 
 audio_files_names = []
-len_text = 500
 device = torch.device('cpu')
 torch.set_num_threads(4)
 
-if not os.path.isfile("model.pt"):
+if not os.path.isfile(model_file):
 	torch.hub.download_url_to_file('https://models.silero.ai/models/tts/ru/v3_1_ru.pt',
-									"model.pt")
+									model_file)
 
 
-model = torch.package.PackageImporter("model.pt").load_pickle("tts_models", "model")
+model = torch.package.PackageImporter(model_file).load_pickle("tts_models", "model")
 model.to(device)
 
-ssml_sample = ssml_text_cut(ssml_sample)
+ssml_sample = ssml_text_cut(ssml_sample, len_paragraph)
 for i in range(0, len(ssml_sample)):
 	text = ssml_sample[i]
+	if len(text) < 4:
+		continue
 	print(str(i)+") generate")
 	print(text)
-	if ssml_flag == "--ssml":
-		audio_model = model.apply_tts(ssml_text="<speak>"+text+"</speak>",
+	if ssml_flag != "0":
+		speaked_text = model.apply_tts(ssml_text="<speak>"+text+"</speak>",
 									 speaker=speaker,
 									 sample_rate=sample_rate,
-									 voice_path=model_file)
+									 voice_path=gen_model)
 	else:
-		audio_model = model.apply_tts(text=text,
+		speaked_text = model.apply_tts(text=text,
 								 speaker=speaker,
 								 sample_rate=sample_rate,
-								 voice_path=model_file)
-	save_audio(str(i)+".wav", audio_model, sample_rate)
+								 voice_path=gen_model)
+	save_audio(str(i)+".wav", speaked_text, sample_rate)
 	audio_files_names.append(str(i)+".wav")
 
-split_audio(audio_files_names).export(voice_path, format="wav")
+split_audio(audio_files_names).export(out_sound, format="wav")
 remove_files(audio_files_names)
