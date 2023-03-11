@@ -4,6 +4,7 @@ import os
 import torch
 import pygame
 import sys
+import random
 from pydub import AudioSegment
 from IPython.display import Audio
 
@@ -11,7 +12,7 @@ from IPython.display import Audio
 def ssml_text_cut(text):
 	text_out = []
 	while text != "" or len(text) >= 2:
-		tmp_text = text[:800]
+		tmp_text = text[:990]
 		pos_begin = tmp_text.find("<p>")
 		pos_end = tmp_text.find("</p>")+4
 		if pos_end == -1+4:
@@ -44,6 +45,7 @@ def split_audio(audio_array):
 			out_sounds = AudioSegment.from_wav(audio_array[i])
 			continue 
 		out_sounds = out_sounds + AudioSegment.from_wav(audio_array[i])
+		out_sounds = out_sounds + AudioSegment.from_wav("sound/pause"+random.choice(["1_5s", "2s", "3s"])+".wav")
 	return out_sounds
 
 text_file = sys.argv[1]
@@ -86,7 +88,7 @@ model = torch.package.PackageImporter("model.pt").load_pickle("tts_models", "mod
 model.to(device)
 
 ssml_sample = ssml_text_cut(ssml_sample)
-for i in range(0, len(ssml_sample)-4):
+for i in range(0, len(ssml_sample)):
 	text = ssml_sample[i]
 	print(str(i)+") generate")
 	print(text)
