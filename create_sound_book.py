@@ -8,7 +8,21 @@ import random
 from pydub import AudioSegment
 from IPython.display import Audio
 import argparse
+import threading
 
+
+def generate_save_audio(model, speaker, sample_rate, voice_path, i, ssml):
+	if ssml != "0":
+		speaked_text = model.apply_tts(ssml_text="<speak>"+text+"</speak>",
+									 speaker=speaker,
+									 sample_rate=sample_rate,
+									 voice_path=gen_model)
+	else:
+		speaked_text = model.apply_tts(text=text,
+									 speaker=speaker,
+									 sample_rate=sample_rate,
+									 voice_path=gen_model)
+	save_audio(str(i)+".wav", speaked_text, sample_rate)
 
 def ssml_text_cut(text, len_paragraph):
 	text_out = []
@@ -107,24 +121,25 @@ model = torch.package.PackageImporter(model_file).load_pickle("tts_models", "mod
 model.to(device)
 
 ssml_sample = ssml_text_cut(ssml_sample, len_paragraph)
+threads = []
+thread_alive = True
 for i in range(0, len(ssml_sample)):
 	text = ssml_sample[i]
 	if len(text) < 4:
 		continue
 	print(str(i)+") generate")
 	print(text)
-	if ssml_flag != "0":
-		speaked_text = model.apply_tts(ssml_text="<speak>"+text+"</speak>",
-									 speaker=speaker,
-									 sample_rate=sample_rate,
-									 voice_path=gen_model)
-	else:
-		speaked_text = model.apply_tts(text=text,
-								 speaker=speaker,
-								 sample_rate=sample_rate,
-								 voice_path=gen_model)
-	save_audio(str(i)+".wav", speaked_text, sample_rate)
+	threads.append(threading.Thread(target=generate_save_audio, args=[model, speaker, sample_rate, gen_model, i, ssml_flag]))
+	threads[-1].start()
 	audio_files_names.append(str(i)+".wav")
+
+while thread_alive:
+	all_alive = len(threads)
+	for i in threads:
+		if not i.is_alive():
+			all_alive -= 1
+	if all_alive == 0:
+		thread_alive = False
 
 split_audio(audio_files_names).export(out_sound, format="wav")
 remove_files(audio_files_names)
