@@ -43,7 +43,7 @@ def split_audio(audio_array):
 	for i in range(0, len(audio_array)):
 		if i == 0:
 			out_sounds = AudioSegment.from_wav(audio_array[i])
-			out_sounds = out_sounds + AudioSegment.from_wav("sound/pause"+random.choice(["1_5s", "2s", "3s"])+".wav")
+			out_sounds = out_sounds + AudioSegment.from_wav("sound/pause"+random.choice(["1_5s", "2s"])+".wav")
 			continue 
 		out_sounds = out_sounds + AudioSegment.from_wav(audio_array[i])
 		out_sounds = out_sounds + AudioSegment.from_wav("sound/pause"+random.choice(["1_5s", "2s", "3s"])+".wav")
